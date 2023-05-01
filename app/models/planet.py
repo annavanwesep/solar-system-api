@@ -11,3 +11,11 @@ class Planet(db.Model):
 
     def get_planet_info(self):
         return f"{self.id} | Planet Name: {self.planet_name}  Description: {self.description} Potential for Life: {self.potential_for_life}  Number of Moons: {self.number_of_moons}"
+    
+        #return {
+        #        "id": self.id,
+        #        "planet_name": self.planet_name,
+        #        "description": self.description,
+        #        "potential_for_life": self.potential_for_life,
+        #        "number_of_moons": self.number_of_moons
+        # }
