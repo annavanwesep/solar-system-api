@@ -73,9 +73,12 @@ planets_bp = Blueprint("planets", __name__, url_prefix="/planets")
 def create_planets():    # check if columns in response body? If not return 400 "Invalid Request"?
     request_body = request.get_json()
     print(request_body)
-    new_planet = Planet(planet_name=request_body['name'])    
+    new_planet = Planet(planet_name=request_body["name"], 
+                        description=request_body["description"],
+                        potential_for_life=request_body["potential_for_life"],
+                        number_of_moons=request_body["number_of_moons"])    
 
-    db.session.add(new_planet)
+    db.session.add(new_planet) 
     db.session.commit()    
     
     return {"id":new_planet.id,
