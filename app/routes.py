@@ -6,6 +6,7 @@ from app.models.planet import Planet
 
 planets_bp = Blueprint("planets", __name__, url_prefix="/planets")
 
+
 @planets_bp.route("", methods=['GET'])
 def handle_planets():
     planets_dict = []
@@ -45,13 +46,27 @@ def validate_planet(planet_id):
     #         return planet
     return planet if planet else abort(make_response({"message":f"planet {planet_id} not found"}, 404))
 
-# class Planet():
-#     def __init__(self, id, name, description, potential_for_life, number_of_moons):
-#         self.id = id
-#         self.name = name
-#         self.description = description
-#         self.potential_for_life = potential_for_life
-#         self.number_of_moons = number_of_moons
+@planets_bp.route("/<animal_id>", methods=['PUT'])
+def update_one_planet(planet_id):
+    #Get the data from the request body
+    request_body = request.get_json()
+    
+    planet_to_update = validate_planet(planet_id)
+    
+    db.session.commit()
+    
+    return planet_to_update(), 200
+
+@planets_bp.route("/<planet_id>", methods=['DELETE'])
+def delete_one_planet(planet_id):
+    
+    planet_to_delete = validate_planet(planet_id)
+    
+    db.session.delete(planet_to_delete)
+    db.session.commit()
+    
+    return f"Planet {planet_to_delete.name} is deleted!", 200
+
 
 # # Refactor : 
 # solar_system_planets = [
@@ -86,28 +101,3 @@ def create_planets():    # check if columns in response body? If not return 400 
             "msg": "Successfully created"}, 201
 
 
-
-# def create_planets():
-        
-#     # check if columns in response body? If not return 400 "Invalid Request"?
-#     request_body = request.get_json()
-#     new_planet = Planet(id = request_body["id"],
-#                         planet_name = request_body["planet_name"], 
-#                         description = request_body["description"],
-#                         potential_for_life = request_body["potential_for_life"],
-#                         number_of_moons = request_body["number_of_moons"])
-    
-#     db.session.add(new_planet)
-#     db.session.commit()
-
-#     return make_response(f"{new_planet.id} | Planet Name: {new_planet.name}  Description: {new_planet.description} Potential for Life: {new_planet.potential_for_life}  Number of Moons: {new_planet.number_of_moons} created successfully! 201")
-
-# from app import db
-
-# #Class 'Planet' because SQL likes singular class names
-# class Planet(db.Model):
-#     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
-#     planet_name = db.Column(db.String)
-#     description = db.Column(db.String)
-#     potential_for_life = db.Column(db.String)
-#     number_of_moons = db.Column(db.Integer)
