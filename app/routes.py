@@ -1,23 +1,30 @@
-
+from os import abort
 from app import db
 from flask import Blueprint, jsonify, abort, make_response, request
 from app.models.planet import Planet
 
-
 planets_bp = Blueprint("planets", __name__, url_prefix="/planets")
 
 
-@planets_bp.route("", methods=['GET'])
+@planets_bp.route("", methods=["GET"])
 def handle_planets():
+
+    planet_query = request.args.get("name")
+    if planet_query:
+        solar_system_planets = Planet.query.filter_by(name=planet_query)
+    else:   
+        solar_system_planets = Planet.query.all()
+    
     planets_dict = []
-    solar_system_planets = Planet.query.all()
     for planet in solar_system_planets:
         planets_dict.append(
-            {"id": planet.id,
-            "name": planet.planet_name,
-            "description": planet.description, 
-            "potential for life": planet.potential_for_life,
-            "number_of_moons": planet.number_of_moons})
+            {
+                "id": planet.id,
+                "name": planet.planet_name,
+                "description": planet.description, 
+                "potential for life": planet.potential_for_life,
+                "number_of_moons": planet.number_of_moons
+            })
     
     return jsonify(planets_dict)
 
@@ -46,18 +53,24 @@ def validate_planet(planet_id):
     #         return planet
     return planet if planet else abort(make_response({"message":f"planet {planet_id} not found"}, 404))
 
-@planets_bp.route("/<animal_id>", methods=['PUT'])
+@planets_bp.route("/<planet_id>", methods=["PUT"])
 def update_one_planet(planet_id):
     #Get the data from the request body
+    
+    planet = validate_planet(planet_id)
+    
     request_body = request.get_json()
+
+    planet.planet_name = request_body["name"]
+    planet.description = request_body["description"]
     
-    planet_to_update = validate_planet(planet_id)
-    
+    db.session.add(planet)
     db.session.commit()
     
-    return planet_to_update(), 200
+    return f"Planet #{planet_id} updated!", 200
+    
 
-@planets_bp.route("/<planet_id>", methods=['DELETE'])
+@planets_bp.route("/<planet_id>", methods=["DELETE"])
 def delete_one_planet(planet_id):
     
     planet_to_delete = validate_planet(planet_id)
@@ -65,7 +78,7 @@ def delete_one_planet(planet_id):
     db.session.delete(planet_to_delete)
     db.session.commit()
     
-    return f"Planet {planet_to_delete.name} is deleted!", 200
+    return f"Planet {planet_id} is deleted!", 200
 
 
 # # Refactor : 
@@ -81,7 +94,7 @@ def delete_one_planet(planet_id):
 # ]
 
 # Creating a Planet Endpoint
-planets_bp = Blueprint("planets", __name__, url_prefix="/planets")
+#planets_bp = Blueprint("planets", __name__, url_prefix="/planets")
 
 @planets_bp.route("", methods=['POST'])
 
@@ -96,8 +109,10 @@ def create_planets():    # check if columns in response body? If not return 400 
     db.session.add(new_planet) 
     db.session.commit()    
     
-    return {"id":new_planet.id,
+    return {
+            "id":new_planet.id,
             "name":new_planet.planet_name,
-            "msg": "Successfully created"}, 201
+            "msg": "Successfully created"
+            }, 201
 
 
